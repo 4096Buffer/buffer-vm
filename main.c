@@ -14,11 +14,11 @@ unsigned int getTargetAddress(unsigned char arg1, unsigned char arg2) {
 int32_t switch_type(unsigned char type, unsigned char arg, unsigned char arg2, VM_DATA* vm_data) {
 	switch (type) {
 		case TYPE_IMM:
-			return arg;
+			return arg2;
 		case TYPE_REG:
-			return vm_data->registers[arg];
+			return vm_data->registers[arg2];
 		case TYPE_MEM: {
-			unsigned int target_address = getTargetAddress(arg, arg2);
+			unsigned int target_address = getTargetAddress(arg2, arg);
 			return vm_data->memory[target_address];
 		}
 		default: 
@@ -28,12 +28,13 @@ int32_t switch_type(unsigned char type, unsigned char arg, unsigned char arg2, V
 }
 
 int main() {
+	
 	unsigned char instructions[69] = {
 		MOV, 0x0, 0x0, 0x0,//ustaw r0 na 0
 		CMP, 0x0, 0x0, 0xA, //porownaj R0 z 10
 		JE, 0x0, 0x14,0x0, //jesli jest rowne to przejdz do konca
 		ADD, 0x0, 0x0, 0x1, //dodaj 1 do r0
-		JMP, 0x0, 0x4, 0x0, //skok do adresu 2
+		JMP, 0x0, 0x0, 0x4, //skok do adresu 2
 		END, 0x0, 0x0, 0x0 //END
 	};
 
@@ -94,35 +95,38 @@ int main() {
 		case XOR:
 			registers[arg2] = registers[arg2] ^ switch_type(arg1, arg2, arg3, &vm_data);
 			break;
-		case CMP:
-			if (registers[arg2] == switch_type(arg1, arg2, arg3, &vm_data)) {
+		case CMP: {
+			int32_t switch_chose = switch_type(arg1, arg2, arg3, &vm_data);
+
+			if (registers[arg2] == switch_chose) {
 				flag = 0;
 			}
-			else if (registers[arg2] > switch_type(arg1, arg2, arg3, &vm_data)) {
+			else if (registers[arg2] > switch_chose) {
 				flag = 1;
 			}
 			else {
 				flag = -1;
 			}
 			break;
+		}
 		case JE: {
 			if (flag != 0) break;
 
-			unsigned int target_address = getTargetAddress(arg1, arg2);
+			unsigned int target_address = getTargetAddress(arg2, arg3);
 
 			p = target_address;
 			continue;
 		}
 		case JMP: {
-			unsigned int target_address = getTargetAddress(arg1, arg2);
-
+			unsigned int target_address = getTargetAddress(arg2, arg3);
+			
 			p = target_address;
 			continue;
 		}
 		case JG: {
 			if (flag != 1) break;
 
-			unsigned int target_address = getTargetAddress(arg1, arg2);
+			unsigned int target_address = getTargetAddress(arg2, arg3);
 
 			p = target_address;
 			continue;
@@ -130,7 +134,7 @@ int main() {
 		case JL: {
 			if (flag != -1) break;
 
-			unsigned int target_address = getTargetAddress(arg1, arg2);
+			unsigned int target_address = getTargetAddress(arg2, arg3);
 
 			p = target_address;
 			continue;
@@ -140,7 +144,7 @@ int main() {
 			break;
 		case JNE: {
 			if (flag == 0) break;
-			unsigned int target_address = getTargetAddress(arg1, arg2);
+			unsigned int target_address = getTargetAddress(arg2, arg3);
 
 			p = target_address;
 
@@ -148,7 +152,7 @@ int main() {
 		}
 		case JLE: {
 			if (flag == 1) break;
-			unsigned int target_address = getTargetAddress(arg1, arg2);
+			unsigned int target_address = getTargetAddress(arg2, arg3);
 
 			p = target_address;
 
@@ -156,7 +160,7 @@ int main() {
 		}
 		case JGE: {
 			if (flag == -1) break;
-			unsigned int target_address = getTargetAddress(arg1, arg2);
+			unsigned int target_address = getTargetAddress(arg2, arg3);
 
 			p = target_address;
 
