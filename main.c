@@ -40,9 +40,27 @@ int32_t readU32(unsigned char* memory, unsigned int addr) {
 
 int main() {
 	unsigned char instructions[69] = {
-		PRINT, TYPE_MEM, 0x0, 0x4,
-		//DATA START
-		'H', 'E', 'Y', '\0'
+		MOV,   TYPE_IMM, 0x0, 0x0,
+
+		CMP,   TYPE_IMM, 0x0, 0x5,
+
+		JE,    0x0, 0x0, 0x20,
+
+		PRINT, TYPE_MEM, 0x0, 0x24, 
+
+		PRINT, TYPE_REG, 0x0, 0x0, 
+
+		PRINT, TYPE_MEM, 0x0, 0x2C,
+
+		ADD,   TYPE_IMM, 0x0, 0x1,
+
+		JMP,   0x0, 0x0, 0x4,
+
+		END,   0x0, 0x0, 0x0,
+
+		'I', 't', 'e', 'r', ':', ' ', '\0', 0x0,
+
+		'\n', '\0'
 	};
 
 	int program_size = 0;
@@ -63,7 +81,7 @@ int main() {
 		return 1;
 	}
 
-	for (int i = 0; i < program_size; i++) {
+	for (int i = 0; i < 69; i++) {  
 		memory[i] = instructions[i];
 	}
 
@@ -201,6 +219,7 @@ int main() {
 			}
 			else {
 				int32_t value = switchType(arg1, arg2, arg3, &vm_data);
+
 				printf("%d", value);
 			}
 			break;
