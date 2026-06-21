@@ -250,6 +250,21 @@ int main() {
 			p = return_address;
 			continue;
 		}
+		case AND:
+			registers[arg2] = registers[arg2] & switchType(arg1, arg2, arg3, &vm_data);
+			break;
+		case OR:
+			registers[arg2] = registers[arg2] | switchType(arg1, arg2, arg3, &vm_data);
+			break;
+		case NOT:
+			registers[arg2] = ~registers[arg2];
+			break;
+		case SHL:
+			registers[arg2] = registers[arg2] << switchType(arg1, arg2, arg3, &vm_data);
+			break;
+		case SHR:
+			registers[arg2] = registers[arg2] >> switchType(arg1, arg2, arg3, &vm_data);
+			break;
 		default:
 			registers[STATUS] = 1;
 			break;
