@@ -25,6 +25,16 @@
 #define JLE 0xD
 #define JGE 0xE
 
+#define PUSH 0xF
+#define POP 0x10
+#define CALL 0x11
+#define RET 0x12
+
+#define LOAD   0x13   
+#define STORE  0x14
+
+#define PRINT 0x15
+
 #define TYPE_IMM 0x0
 #define TYPE_REG 0x1
 #define TYPE_MEM 0x2
@@ -37,4 +47,4 @@ typedef struct {
 } VM_DATA;
 
 unsigned int getTargetAddress(unsigned char arg1, unsigned char arg2);
-int32_t switch_type(unsigned char type, unsigned char arg, unsigned char arg2, VM_DATA* vm_data);
+int32_t switchType(unsigned char type, unsigned char arg, unsigned char arg2, VM_DATA* vm_data);

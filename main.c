@@ -11,14 +11,14 @@ unsigned int getTargetAddress(unsigned char arg1, unsigned char arg2) {
 	return target_address;
 }
 
-int32_t switch_type(unsigned char type, unsigned char arg, unsigned char arg2, VM_DATA* vm_data) {
+int32_t switchType(unsigned char type, unsigned char arg, unsigned char arg2, VM_DATA* vm_data) {
 	switch (type) {
 		case TYPE_IMM:
 			return arg2;
 		case TYPE_REG:
 			return vm_data->registers[arg2];
 		case TYPE_MEM: {
-			unsigned int target_address = getTargetAddress(arg2, arg);
+			unsigned int target_address = getTargetAddress(arg, arg2);
 			return vm_data->memory[target_address];
 		}
 		default: 
@@ -30,12 +30,9 @@ int32_t switch_type(unsigned char type, unsigned char arg, unsigned char arg2, V
 int main() {
 	
 	unsigned char instructions[69] = {
-		MOV, 0x0, 0x0, 0x0,//ustaw r0 na 0
-		CMP, 0x0, 0x0, 0xA, //porownaj R0 z 10
-		JE, 0x0, 0x14,0x0, //jesli jest rowne to przejdz do konca
-		ADD, 0x0, 0x0, 0x1, //dodaj 1 do r0
-		JMP, 0x0, 0x0, 0x4, //skok do adresu 2
-		END, 0x0, 0x0, 0x0 //END
+		PRINT, TYPE_MEM, 0x0, 0x4,
+		//DATA START
+		'H', 'E', 'J', '\0'
 	};
 
 	int program_size = 0;
@@ -81,22 +78,22 @@ int main() {
 
 		switch (opcode) {
 		case MOV:
-			registers[arg2] = switch_type(arg1, arg2, arg3, &vm_data);
+			registers[arg2] = switchType(arg1, arg2, arg3, &vm_data);
 			break;
 		case ADD:
-			registers[arg2] = registers[arg2] + switch_type(arg1, arg2, arg3, &vm_data);
+			registers[arg2] = registers[arg2] + switchType(arg1, arg2, arg3, &vm_data);
 			break;
 		case SUB:
-			registers[arg2] = registers[arg2] - switch_type(arg1, arg2, arg3, &vm_data);
+			registers[arg2] = registers[arg2] - switchType(arg1, arg2, arg3, &vm_data);
 			break;
 		case MUL:
-			registers[arg2] = registers[arg2] * switch_type(arg1, arg2, arg3, &vm_data);
+			registers[arg2] = registers[arg2] * switchType(arg1, arg2, arg3, &vm_data);
 			break;
 		case XOR:
-			registers[arg2] = registers[arg2] ^ switch_type(arg1, arg2, arg3, &vm_data);
+			registers[arg2] = registers[arg2] ^ switchType(arg1, arg2, arg3, &vm_data);
 			break;
 		case CMP: {
-			int32_t switch_chose = switch_type(arg1, arg2, arg3, &vm_data);
+			int32_t switch_chose = switchType(arg1, arg2, arg3, &vm_data);
 
 			if (registers[arg2] == switch_chose) {
 				flag = 0;
@@ -140,7 +137,7 @@ int main() {
 			continue;
 		}
 		case DIV:
-			registers[arg2] = registers[arg2] / switch_type(arg1, arg2, arg3, &vm_data);
+			registers[arg2] = registers[arg2] / switchType(arg1, arg2, arg3, &vm_data);
 			break;
 		case JNE: {
 			if (flag == 0) break;
@@ -166,13 +163,39 @@ int main() {
 
 			continue;
 		}
+		case LOAD: {
+			unsigned int target_address = getTargetAddress(arg2, arg3);
+
+			// here arg1 represents the index of register not type
+
+			registers[arg1] = *(memory + target_address);
+
+			break;
+		}
+		case STORE: {
+			unsigned int target_address = getTargetAddress(arg2, arg3);
+
+			*(memory + target_address) = registers[arg1];
+			break;
+		}
+		case PRINT: {
+			if (arg1 == TYPE_MEM) {
+				unsigned int target_address = getTargetAddress(arg2, arg3);
+
+				while (memory[target_address] != '\0') {
+					putchar(memory[target_address]);
+					target_address++;
+				}
+			}
+			else {
+				int32_t value = switchType(arg1, arg2, arg3, &vm_data);
+				printf("%d", value);
+			}
+			break;
+		}
 		default:
 			registers[STATUS] = 1;
 			break;
-		}
-
-		if (registers[R0] != 0) {
-			printf("%d\n", registers[R0]);
 		}
 
 		p += 4;
