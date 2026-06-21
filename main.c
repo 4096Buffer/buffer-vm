@@ -27,6 +27,17 @@ int32_t switchType(unsigned char type, unsigned char arg, unsigned char arg2, VM
 	}
 }
 
+void writeU32(unsigned char* memory, unsigned int addr, int32_t value) {
+	memory[addr] = (value >> 24) & 0xFF;
+	memory[addr + 1] = (value >> 16) & 0xFF;
+	memory[addr + 2] = (value >> 8) & 0xFF;
+	memory[addr + 3] = value & 0xFF;
+}
+
+int32_t readU32(unsigned char* memory, unsigned int addr) {
+	return (memory[addr] << 24) | (memory[addr + 1] << 16) | (memory[addr + 2] << 8) | memory[addr + 3];
+}
+
 int main() {
 	unsigned char instructions[69] = {
 		PRINT, TYPE_MEM, 0x0, 0x4,
@@ -45,7 +56,7 @@ int main() {
 
 	unsigned int DATA_START = program_size;
 
-	unsigned char* memory = calloc(1024 * 1024, sizeof(unsigned char));
+	unsigned char* memory = calloc(MEMORY_SIZE, sizeof(unsigned char));
 
 	if (memory == NULL) {
 		printf("ERROR: Memory allocation error! \n");
@@ -59,6 +70,7 @@ int main() {
 	int32_t registers[5] = { 0 };
 	signed int flag = -2; // == 0 equal == 1 greater == -1 less
 	int p = 0;
+	int sp = MEMORY_SIZE;
 
 	VM_DATA vm_data;
 
@@ -66,6 +78,7 @@ int main() {
 	vm_data.registers = registers;
 	vm_data.flag = &flag;
 	vm_data.p = &p;
+	vm_data.sp = &sp;
 
 	while (registers[STATUS] == 0) {
 		if (p >= program_size) break;
@@ -191,6 +204,32 @@ int main() {
 				printf("%d", value);
 			}
 			break;
+		}
+		case PUSH: {
+			sp -= 4;
+			writeU32(memory, sp, registers[arg1]);
+			break;
+		}
+		case POP: {
+			registers[arg1] = readU32(memory, sp);
+			sp += 4;
+			break;
+		}
+		case CALL: {
+			unsigned int target_address = getTargetAddress(arg2, arg3);
+
+			sp -= 4;
+			writeU32(memory, sp, p + 4);
+
+			p = target_address;
+			continue;
+		}
+		case RET: {
+			int return_address = readU32(memory, sp);
+			sp += 4;
+			
+			p = return_address;
+			continue;
 		}
 		default:
 			registers[STATUS] = 1;
