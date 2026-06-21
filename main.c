@@ -28,11 +28,10 @@ int32_t switchType(unsigned char type, unsigned char arg, unsigned char arg2, VM
 }
 
 int main() {
-	
 	unsigned char instructions[69] = {
 		PRINT, TYPE_MEM, 0x0, 0x4,
 		//DATA START
-		'H', 'E', 'J', '\0'
+		'H', 'E', 'Y', '\0'
 	};
 
 	int program_size = 0;
