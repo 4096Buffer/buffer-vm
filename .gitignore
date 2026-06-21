@@ -1,4 +1,29 @@
+# Ignoruj wszystko domyślnie
 *
-!*.c
-!*.h
+
+# Ale NIE ignoruj samych folderów (żeby git mógł do nich wejść)
+!include/
+!src/
+!examples/
+!tests/
+
+# W tych folderach pozwól tylko na .c i .h
+include/*
+!include/*.h
+!include/*.c
+
+src/*
+!src/*.c
+!src/*.h
+
+examples/*
+!examples/*.c
+!examples/*.h
+
+tests/*
+!tests/*.c
+!tests/*.h
+
+# Pliki w katalogu głównym, które chcesz zachować
+!README.md
 !.gitignore
